@@ -23,14 +23,12 @@ class AgentState(TypedDict):
 @tool
 async def add(a: int, b: int) -> int:
     """Складывает два целых числа и возвращает результат."""
-    await asyncio.sleep(0.1)
     return a + b
 
 
 @tool
 async def list_files() -> list:
     """Возвращает список файлов в текущей папке."""
-    await asyncio.sleep(0.1)
     return os.listdir(".")
 
 tools = [add, list_files]
@@ -49,7 +47,6 @@ async def should_continue(state: AgentState) -> str:
     messages = state["messages"]
     last_message = messages[-1]
 
-    # Если последнее сообщение от AI и содержит вызовы инструментов - продолжаем
     if isinstance(last_message, AIMessage) and last_message.tool_calls:
         return "continue"
 
@@ -81,22 +78,6 @@ async def main():
             ]
         }
     )
-
-    # Показываем результат
-    print("=== Полная история сообщений ===")
-    for i, msg in enumerate(result["messages"]):
-        print(f"{i+1}. {type(msg).__name__}: {getattr(msg, 'content', None)}")
-        if hasattr(msg, "tool_calls") and msg.tool_calls:
-            print(f"   Tool calls: {msg.tool_calls}")
-
-    # Финальный ответ
-    for msg in reversed(result["messages"]):
-        if isinstance(msg, AIMessage) and not getattr(msg, "tool_calls", None):
-            print(f"\n=== Финальный ответ ===")
-            print(msg.content)
-            break
-    else:
-        print("\n=== Финальный ответ не найден ===")
 
 if __name__ == "__main__":
     asyncio.run(main())
